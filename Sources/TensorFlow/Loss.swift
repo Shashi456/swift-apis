@@ -353,3 +353,23 @@ public func _mean<Scalar: TensorFlowFloatingPoint>(
 ) -> Tensor<Scalar> {
   return value.mean()
 }
+
+/// Computes the triplet loss.
+///
+/// - Source: [FaceNet: A Unified Embedding for Face Recognition and Clustering](https://arxiv.org/abs/1503.03832).
+///
+/// - Parameters:
+///   - anchor: Encoding for the anchor data.
+///   - positive: Encoding for the positive data.
+///   - negative: Encoding for the negative data.
+///   - margin: Contrastive margin.
+@differentiable
+public func triplet<Scalar: TensorFlowFloatingPoint>(
+    anchor: Tensor<Scalar>, positive: Tensor<Scalar>,
+    negative: Tensor<Scalar>, margin: Tensor<Scalar>
+) -> Tensor<Scalar> {
+    let positiveDistance = (anchor - positive).squared().sum(alongAxes: 1)
+    let negativeDistance = (anchor - negative).squared().sum(alongAxes: 1)
+    let loss = positiveDistance - negativeDistance + margin
+    return max(loss.mean(), Tensor<Scalar>(0))
+}
